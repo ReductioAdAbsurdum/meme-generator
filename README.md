@@ -1,6 +1,6 @@
-# Meme generator
+# Zumbirator
 
-Ubaci svoju sliku na papir koji čovek drži, dopiši natpis i preuzmi meme kao PNG ili JPG.
+Meme generator: ubaci svoju sliku na papirić koji čovek drži, dopiši natpis i preuzmi meme kao PNG ili JPG. Da se zumbira!
 Sve radi u pregledaču. Nema servera i slike se nigde ne šalju.
 
 Sajt: https://reductioadabsurdum.github.io/meme-generator/

@@ -412,7 +412,7 @@ def og_image(tpl, data, size=(1280, 725)):
     draw = ImageDraw.Draw(im)
     font = ImageFont.truetype(FONT_PATH, round(FONT_SIZE * s))
     x = round(data["caption"]["x"] * s)
-    lines = ("Meme generator", "Ubaci svoju sliku i napiši natpis")
+    lines = ("Zumbirator", "Ubaci svoju sliku. Da se zumbira!")
     for text, base in zip(lines, data["caption"]["baselines"]):
         draw.text((x, round(base * s)), text, font=font, fill="white", anchor="ls",
                   stroke_width=max(1, round(FONT_SIZE * s * 0.05)), stroke_fill=(16, 12, 28))

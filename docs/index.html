@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Meme generator</title>
-  <meta name="description" content="Ubaci svoju sliku na papir koji čovek drži, dopiši natpis i preuzmi meme.">
+  <title>Zumbirator</title>
+  <meta name="description" content="Ubaci svoju sliku na papirić koji čovek drži, dopiši natpis i preuzmi meme. Da se zumbira!">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Meme generator">
-  <meta property="og:description" content="Ubaci svoju sliku na papir koji čovek drži, dopiši natpis i preuzmi meme.">
+  <meta property="og:title" content="Zumbirator">
+  <meta property="og:description" content="Ubaci svoju sliku na papirić koji čovek drži, dopiši natpis i preuzmi meme. Da se zumbira!">
   <!-- Link previews (Facebook, Viber, X...) need full URLs: update both if the site address changes -->
   <meta property="og:url" content="https://reductioadabsurdum.github.io/meme-generator/">
   <meta property="og:image" content="https://reductioadabsurdum.github.io/meme-generator/assets/og.jpg">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='10' width='52' height='44' rx='8' fill='%23b3261e'/%3E%3Ccircle cx='42' cy='24' r='5' fill='%23fff'/%3E%3Cpath d='M12 48l14-16 9 10 6-6 11 12z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='6' y='6' width='52' height='52' rx='12' fill='%23b3261e'/%3E%3Ccircle cx='28' cy='28' r='12' fill='none' stroke='%23fff' stroke-width='5'/%3E%3Cpath d='M37 37l11 11M28 22v12M22 28h12' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
   <style>
     :root {
       --bg: #f4f2ef;
@@ -123,7 +123,7 @@
       color: #fff; font-weight: 600;
     }
     .busy[hidden] { display: none; }
-    /* "Uvećaj papir": show only the left part (paper + caption start), much larger */
+    /* "Zumbiraj papirić": show only the left part (paper + caption start), much larger */
     .canvas-wrap.focus { width: min(100%, calc(78vh * 1000 / 1372)); aspect-ratio: 1000 / 1372; margin-inline: auto; }
     .canvas-wrap.focus canvas#meme { width: 300.4%; max-width: none; margin-top: -33%; }
     .stage-bar {
@@ -303,11 +303,11 @@
 <body>
   <header class="top">
     <span class="logo" aria-hidden="true">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="15.5" cy="9.5" r="1.6"/><path d="M4 18l5.5-6 4 4.5 2.5-2.5 4 4"/></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M10.5 8v5M8 10.5h5"/></svg>
     </span>
     <div>
-      <h1>Meme generator</h1>
-      <p>Ubaci svoju sliku na papir koji čovek drži, dopiši natpis i preuzmi.</p>
+      <h1>Zumbirator</h1>
+      <p>Ubaci svoju sliku na papirić koji čovek drži, dopiši natpis i preuzmi. Da se zumbira!</p>
     </div>
   </header>
 
@@ -318,7 +318,7 @@
         <div class="busy" id="busy" hidden>Učitavam…</div>
       </div>
       <div class="stage-bar">
-        <button class="btn small" id="focusBtn" type="button" aria-pressed="false">Uvećaj papir</button>
+        <button class="btn small" id="focusBtn" type="button" aria-pressed="false">Zumbiraj papirić</button>
         <div class="row export">
           <button class="btn" id="copy" type="button">Kopiraj</button>
           <button class="btn" id="share" type="button" hidden>Podeli</button>
@@ -331,7 +331,7 @@
 
     <aside class="panel">
       <section class="card" aria-labelledby="h-img">
-        <h2 id="h-img"><span class="step">1</span>Slika</h2>
+        <h2 id="h-img"><span class="step">1</span>Papirić</h2>
         <div class="row">
           <button class="btn primary grow" id="pick" type="button">Izaberi sliku</button>
           <button class="btn" id="clearImg" type="button" hidden>Ukloni</button>
@@ -342,13 +342,13 @@
           <label><input type="radio" name="fit" value="stretch"><span>Razvuci</span></label>
         </div>
         <label class="field">
-          <span>Zum <output id="zoomOut">100%</output></span>
+          <span>Zumbiranje <output id="zoomOut">100%</output></span>
           <input type="range" id="zoom" min="100" max="500" value="100">
         </label>
         <div class="row">
           <button class="btn small" id="reset" type="button">Vrati na sredinu</button>
         </div>
-        <p class="note">Prevuci sliku po papiru da je pomeriš. Točkić miša ili dva prsta za zum.</p>
+        <p class="note">Prevuci sliku po papiriću da je pomeriš. Točkić miša ili dva prsta za zumbiranje.</p>
         <input type="file" id="file" accept="image/*" hidden>
       </section>
 
@@ -374,7 +374,7 @@
       <section class="card" aria-labelledby="h-look">
         <h2 id="h-look"><span class="step">3</span>Izgled</h2>
         <label class="field">
-          <span>Odsjaj i senke papira <output id="realOut">60%</output></span>
+          <span>Odsjaj i senke papirića <output id="realOut">60%</output></span>
           <input type="range" id="realism" min="0" max="100" value="60">
         </label>
       </section>
@@ -399,7 +399,7 @@
   <div class="drop" id="drop" hidden><div>Pusti sliku ovde</div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <noscript><p style="padding:16px">Za meme generator je potreban JavaScript.</p></noscript>
+  <noscript><p style="padding:16px">Za Zumbirator je potreban JavaScript.</p></noscript>
   <script src="assets/template-data.js"></script>
   <script src="assets/default-image.js"></script>
   <script src="app.js"></script>

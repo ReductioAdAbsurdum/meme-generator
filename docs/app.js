@@ -1,4 +1,4 @@
-/* Meme generator: warps the user's image onto the held paper, adds the caption, exports.
+/* Zumbirator (meme generator): warps the user's image onto the held paper, adds the caption, exports.
    Works straight from file:// because the template is embedded in assets/template-data.js. */
 (() => {
   'use strict';
@@ -20,9 +20,14 @@
   const MAX_LEVEL = 3072;                      // longest side of the working copy of the user image
   const ZOOM_MIN = 1, ZOOM_MAX = 5;
   const PAPER = [247, 243, 240];
-  const STORE_KEY = 'meme-generator:v2';         // v2: new default caption, so old saved text doesn't hide it
-  const OLD_STORE_KEYS = ['meme-generator:v1'];
+  const STORE_KEY = 'zumbirator:v1';             // new key when the default caption changes, so old saved text doesn't hide it
+  const OLD_STORE_KEYS = ['meme-generator:v1', 'meme-generator:v2'];
   const EXAMPLE_IMAGE = window.MEME_DEFAULT_IMAGE; // example photo on the paper until the visitor picks their own
+  const DEFAULT_CAPTIONS = [                       // one is picked at random per visit, until the visitor types their own
+    ['Da se zumbira!', 'Narod mora da vidi ko je krivac'],
+    ['Molim režiju da zumira', 'Ovo je dokaz broj jedan'],
+  ];
+  const DEFAULT_CAPTION = DEFAULT_CAPTIONS[Math.floor(Math.random() * DEFAULT_CAPTIONS.length)];
   const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
   const PASTE_KEY = IS_MAC ? '⌘V' : 'Ctrl+V';
   const TOUCH = window.matchMedia('(pointer: coarse)').matches;
@@ -62,7 +67,7 @@
     src: null, srcUrl: null, level: null,
     fit: 'cover', zoom: 1, cx: 0, cy: 0,
     realism: 0.6,
-    line1: 'Ćao Mama', line2: 'Hoće ovo na televiziju da izađe', cyr: false, textScale: 1,
+    line1: DEFAULT_CAPTION[0], line2: DEFAULT_CAPTION[1], cyr: false, textScale: 1,
   };
   restoreSettings();
 
@@ -574,8 +579,8 @@
   async function doExport(type, ext, quality) {
     try {
       const blob = await exportBlob(type, quality);
-      downloadBlob(blob, `meme-${stamp()}.${ext}`);
-      toast(`Preuzeto: meme.${ext}`);
+      downloadBlob(blob, `zumbirator-${stamp()}.${ext}`);
+      toast(`Preuzeto: zumbirator.${ext}`);
     } catch (err) {
       toast('Izvoz nije uspeo.');
     }
@@ -597,7 +602,7 @@
   async function shareImage() {
     try {
       const blob = await exportBlob('image/png');
-      const file = new File([blob], `meme-${stamp()}.png`, { type: 'image/png' });
+      const file = new File([blob], `zumbirator-${stamp()}.png`, { type: 'image/png' });
       await navigator.share({ files: [file] });
     } catch (err) {
       if (err && err.name !== 'AbortError') toast('Deljenje nije uspelo.');
@@ -671,11 +676,11 @@
     canvas.classList.toggle('has-image', own);     // only block page scrolling while there is an image to drag
     const example = has && !own ? 'Ovo je primer · ' : '';
     if (TOUCH) {
-      ui.hint.textContent = own ? 'Prevuci sliku prstom da je pomeriš · dva prsta za zum' : `${example}Dodirni papir da izabereš svoju sliku`;
+      ui.hint.textContent = own ? 'Prevuci sliku prstom da je pomeriš · dva prsta za zumbiranje' : `${example}Dodirni papirić da izabereš svoju sliku`;
     } else {
       ui.hint.textContent = own
-        ? 'Prevuci sliku po papiru da je pomeriš · točkić miša za zum'
-        : `${example}Klikni na papir ili prevuci svoju sliku bilo gde na stranicu · možeš i da je nalepiš (${PASTE_KEY})`;
+        ? 'Prevuci sliku po papiriću da je pomeriš · točkić miša za zumbiranje'
+        : `${example}Klikni na papirić ili prevuci svoju sliku bilo gde na stranicu · možeš i da je nalepiš (${PASTE_KEY})`;
     }
   }
 
@@ -732,7 +737,7 @@
     const setFocus = (on) => {
       ui.wrap.classList.toggle('focus', on);
       ui.focus.setAttribute('aria-pressed', String(on));
-      ui.focus.textContent = on ? 'Ceo kadar' : 'Uvećaj papir';
+      ui.focus.textContent = on ? 'Odzumbiraj' : 'Zumbiraj papirić';
     };
     setFocus(window.matchMedia('(max-width: 640px)').matches);   // phones start zoomed on the paper
     ui.focus.addEventListener('click', () => setFocus(!ui.wrap.classList.contains('focus')));
