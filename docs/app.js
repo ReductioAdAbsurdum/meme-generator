@@ -20,7 +20,9 @@
   const MAX_LEVEL = 3072;                      // longest side of the working copy of the user image
   const ZOOM_MIN = 1, ZOOM_MAX = 5;
   const PAPER = [247, 243, 240];
-  const STORE_KEY = 'meme-generator:v1';
+  const STORE_KEY = 'meme-generator:v2';         // v2: new default caption, so old saved text doesn't hide it
+  const OLD_STORE_KEYS = ['meme-generator:v1'];
+  const EXAMPLE_IMAGE = window.MEME_DEFAULT_IMAGE; // example photo on the paper until the visitor picks their own
   const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
   const PASTE_KEY = IS_MAC ? '⌘V' : 'Ctrl+V';
   const TOUCH = window.matchMedia('(pointer: coarse)').matches;
@@ -60,7 +62,7 @@
     src: null, srcUrl: null, level: null,
     fit: 'cover', zoom: 1, cx: 0, cy: 0,
     realism: 0.6,
-    line1: 'Ime i prezime', line2: 'Tvoj tekst ovde', cyr: false, textScale: 1,
+    line1: 'Ćao Mama', line2: 'Hoće ovo na televiziju da izađe', cyr: false, textScale: 1,
   };
   restoreSettings();
 
@@ -80,7 +82,10 @@
   }
 
   async function init() {
-    const [base, maps] = await Promise.all([loadImage(T.image), loadImage(T.maps)]);
+    const [base, maps, example] = await Promise.all([
+      loadImage(T.image), loadImage(T.maps),
+      EXAMPLE_IMAGE ? loadImage(EXAMPLE_IMAGE).catch(() => null) : null,
+    ]);
     baseImg = base;
     const c = document.createElement('canvas');
     c.width = BW;
@@ -103,6 +108,7 @@
     photo = new ImageData(BW, BH);
     placeholderSrc = textureSource(makePlaceholder());
     blankSrc = textureSource(makeBlank());
+    if (example) setSource(example, null, true);
     syncUI();
     bindEvents();
     renderNow(3);
@@ -460,6 +466,20 @@
     return f && (/^image\//.test(f.type) || /\.(png|jpe?g|gif|webp|avif|bmp|heic|heif)$/i.test(f.name || ''));
   }
 
+  // isExample = the built-in photo: the paper then acts as if empty (click picks an image, no drag/zoom)
+  function setSource(img, url, isExample = false) {
+    if (state.srcUrl) URL.revokeObjectURL(state.srcUrl);
+    const w = img.naturalWidth, h = img.naturalHeight;
+    state.src = { img, w, h, isExample };
+    state.srcUrl = url;
+    state.level = null;
+    state.zoom = 1;
+    state.cx = w / 2;
+    state.cy = h / 2;
+  }
+
+  const hasUserImage = () => !!state.src && !state.src.isExample;
+
   async function loadFile(file) {
     if (!isImageFile(file)) { toast('To nije slika — probaj PNG, JPG ili WebP.'); return; }
     ui.busy.hidden = false;
@@ -467,15 +487,8 @@
     try {
       const img = await loadImage(url);
       if (img.decode) await img.decode().catch(() => {});
-      const w = img.naturalWidth, h = img.naturalHeight;
-      if (!w || !h) throw new Error('empty image');
-      if (state.srcUrl) URL.revokeObjectURL(state.srcUrl);
-      state.src = { img, w, h };
-      state.srcUrl = url;
-      state.level = null;
-      state.zoom = 1;
-      state.cx = w / 2;
-      state.cy = h / 2;
+      if (!img.naturalWidth || !img.naturalHeight) throw new Error('empty image');
+      setSource(img, url);
       updateImageUI();
       scheduleRender(3);
     } catch (err) {
@@ -616,6 +629,7 @@
   // ---------------------------------------------------------------- settings + UI
   function restoreSettings() {
     try {
+      for (const k of OLD_STORE_KEYS) localStorage.removeItem(k);
       const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
       if (!s || typeof s !== 'object') return;
       if (typeof s.line1 === 'string') state.line1 = s.line1;
@@ -646,21 +660,22 @@
   }
 
   function updateImageUI() {
-    const has = !!state.src;
-    ui.pick.textContent = has ? 'Promeni sliku' : 'Izaberi sliku';
+    const has = !!state.src, own = hasUserImage();
+    ui.pick.textContent = own ? 'Promeni sliku' : 'Izaberi sliku';
     ui.clear.hidden = !has;
     ui.zoom.disabled = !has;
     ui.reset.disabled = !has;
     for (const r of ui.fits) { r.disabled = !has; r.checked = r.value === state.fit; }
     ui.zoom.value = Math.round(state.zoom * 100);
     ui.zoomOut.value = `${ui.zoom.value}%`;
-    canvas.classList.toggle('has-image', has);     // only block page scrolling while there is an image to drag
+    canvas.classList.toggle('has-image', own);     // only block page scrolling while there is an image to drag
+    const example = has && !own ? 'Ovo je primer · ' : '';
     if (TOUCH) {
-      ui.hint.textContent = has ? 'Prevuci sliku prstom da je pomeriš · dva prsta za zum' : 'Dodirni papir da izabereš sliku';
+      ui.hint.textContent = own ? 'Prevuci sliku prstom da je pomeriš · dva prsta za zum' : `${example}Dodirni papir da izabereš svoju sliku`;
     } else {
-      ui.hint.textContent = has
+      ui.hint.textContent = own
         ? 'Prevuci sliku po papiru da je pomeriš · točkić miša za zum'
-        : `Klikni na papir ili prevuci sliku bilo gde na stranicu · možeš i da je nalepiš (${PASTE_KEY})`;
+        : `${example}Klikni na papir ili prevuci svoju sliku bilo gde na stranicu · možeš i da je nalepiš (${PASTE_KEY})`;
     }
   }
 
@@ -765,7 +780,7 @@
     const pinchDist = () => { const [a, b] = pair(); return Math.hypot(a.p.x - b.p.x, a.p.y - b.p.y); };
 
     canvas.addEventListener('pointerdown', (e) => {
-      if (!state.src) return;
+      if (!hasUserImage()) return;
       const p = canvasPoint(e);
       if (!ptrs.size && !uvAt(p)) return;
       e.preventDefault();
@@ -785,7 +800,7 @@
       const p = canvasPoint(e);
       const prev = ptrs.get(e.pointerId);
       if (!prev) {
-        canvas.style.cursor = uvAt(p) ? (state.src ? 'grab' : 'pointer') : '';
+        canvas.style.cursor = uvAt(p) ? (hasUserImage() ? 'grab' : 'pointer') : '';
         return;
       }
       ptrs.set(e.pointerId, { p, cx: e.clientX, cy: e.clientY });
@@ -807,10 +822,10 @@
     canvas.addEventListener('pointercancel', endPointer);
     canvas.addEventListener('click', (e) => {
       if (suppressClick) { suppressClick = false; return; }
-      if (!state.src && uvAt(canvasPoint(e))) ui.file.click();
+      if (!hasUserImage() && uvAt(canvasPoint(e))) ui.file.click();
     });
     canvas.addEventListener('wheel', (e) => {
-      if (!state.src) return;
+      if (!hasUserImage()) return;
       const uv = uvAt(canvasPoint(e));
       if (!uv) return;
       e.preventDefault();
@@ -818,7 +833,7 @@
       zoomAt(uv, state.zoom * Math.exp(-e.deltaY * speed));
     }, { passive: false });
     canvas.addEventListener('keydown', (e) => {
-      if (!state.src) {
+      if (!hasUserImage()) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ui.file.click(); }
         return;
       }
