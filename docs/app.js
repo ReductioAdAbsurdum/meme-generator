@@ -739,7 +739,6 @@
       ui.focus.setAttribute('aria-pressed', String(on));
       ui.focus.textContent = on ? 'Odzumbiraj' : 'Zumbiraj papirić';
     };
-    setFocus(window.matchMedia('(max-width: 640px)').matches);   // phones start zoomed on the paper
     ui.focus.addEventListener('click', () => setFocus(!ui.wrap.classList.contains('focus')));
 
     ui.dlPng.addEventListener('click', () => doExport('image/png', 'png'));
