@@ -20,13 +20,15 @@
   const MAX_LEVEL = 3072;                      // longest side of the working copy of the user image
   const ZOOM_MIN = 1, ZOOM_MAX = 5;
   const PAPER = [247, 243, 240];
-  const STORE_KEY = 'zumbirator:v1';             // new key when the default caption changes, so old saved text doesn't hide it
+  const STORE_KEY = 'zumbirator:v1';             // saved settings: caption the visitor wrote, Cyrillic, sizes
   const OLD_STORE_KEYS = ['meme-generator:v1', 'meme-generator:v2'];
   const EXAMPLE_IMAGE = window.MEME_DEFAULT_IMAGE; // example photo on the paper until the visitor picks their own
   const DEFAULT_CAPTIONS = [                       // one is picked at random per visit, until the visitor types their own
     ['Da se zumbira!', 'Narod mora da vidi ko je krivac'],
-    ['Molim režiju da zumira', 'Ovo je dokaz broj jedan'],
+    ['Molim režiju da zumbira', 'Ovo je dokaz broj jedan'],
   ];
+  // earlier defaults: saved settings can hold them without the visitor ever typing them
+  const OLD_DEFAULT_CAPTIONS = [['Molim režiju da zumira', 'Ovo je dokaz broj jedan']];
   const DEFAULT_CAPTION = DEFAULT_CAPTIONS[Math.floor(Math.random() * DEFAULT_CAPTIONS.length)];
   const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
   const PASTE_KEY = IS_MAC ? '⌘V' : 'Ctrl+V';
@@ -637,8 +639,12 @@
       for (const k of OLD_STORE_KEYS) localStorage.removeItem(k);
       const s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
       if (!s || typeof s !== 'object') return;
-      if (typeof s.line1 === 'string') state.line1 = s.line1;
-      if (typeof s.line2 === 'string') state.line2 = s.line2;
+      // restore only text the visitor wrote; a saved default caption gives way to the current defaults
+      const isDefault = [...DEFAULT_CAPTIONS, ...OLD_DEFAULT_CAPTIONS].some(([a, b]) => a === s.line1 && b === s.line2);
+      if (typeof s.line1 === 'string' && typeof s.line2 === 'string' && !isDefault) {
+        state.line1 = s.line1;
+        state.line2 = s.line2;
+      }
       if (typeof s.cyr === 'boolean') state.cyr = s.cyr;
       if (Number.isFinite(s.textScale)) state.textScale = clamp(s.textScale, 0.7, 1.3);
       if (Number.isFinite(s.realism)) state.realism = clamp(s.realism, 0, 1);
